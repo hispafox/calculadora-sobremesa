@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e8e4dc;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* Carcasa de plástico */
+    .calculadora {
+      width: 300px;
+      padding: 22px 20px 24px;
+      border-radius: 20px;
+      background: linear-gradient(#ddd7c9, #c6bfaf);
+      box-shadow:
+        0 18px 30px rgba(0, 0, 0, 0.25),
+        inset 0 2px 0 rgba(255, 255, 255, 0.6),
+        inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .cabecera {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .marca {
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #4b4740;
+    }
+
+    .marca small {
+      display: block;
+      font-size: 9px;
+      font-weight: normal;
+      letter-spacing: 1px;
+      color: #6d685e;
+    }
+
+    /* Placa solar decorativa */
+    .placa-solar {
+      width: 96px;
+      height: 26px;
+      border: 2px solid #9a9384;
+      border-radius: 3px;
+      background: repeating-linear-gradient(90deg, #3b2c26 0 21px, #6b5548 21px 23px);
+    }
+
+    /* Pantalla LCD */
+    .marco-pantalla {
+      margin-bottom: 18px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #4d4c49;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .pantalla {
+      height: 64px;
+      padding: 0 10px;
+      border-radius: 4px;
+      background: linear-gradient(#bcc6a2, #a8b48e);
+      box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.35);
+      color: #1f2619;
+      font-family: "Lucida Console", Consolas, "Courier New", monospace;
+      font-size: 40px;
+      line-height: 64px;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    /* Teclado */
+    .teclado {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 50px;
+      gap: 10px;
+    }
+
+    .teclado button {
+      --cara: #3f4044;
+      --borde: #1f2023;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.08)), var(--cara);
+      box-shadow: 0 4px 0 var(--borde), 0 6px 8px rgba(0, 0, 0, 0.25);
+      color: #f4f4f2;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* La tecla se hunde al pulsarla, con el ratón o con el teclado del ordenador */
+    .teclado button:active,
+    .teclado button.pulsada {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 var(--borde), 0 2px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .teclado .operacion { --cara: #7d8186; --borde: #4b4e52; }
+    .teclado .borrar    { --cara: #c94b3f; --borde: #7d2a22; }
+    .teclado .igual     { --cara: #e38630; --borde: #94501a; }
+
+    .ancho { grid-column: span 2; }
+    .alto  { grid-row: span 2; }
+  </style>
+</head>
+<body>
+  <main class="calculadora">
+    <div class="cabecera">
+      <div class="marca">CALC-8<small>8 DÍGITOS</small></div>
+      <div class="placa-solar" aria-hidden="true"></div>
+    </div>
+
+    <div class="marco-pantalla">
+      <div class="pantalla" id="pantalla" aria-live="polite">0</div>
+    </div>
+
+    <div class="teclado">
+      <button class="borrar ancho" data-tecla="C" aria-label="Borrar todo">C</button>
+      <button class="borrar" data-tecla="CE" aria-label="Borrar número">CE</button>
+      <button class="operacion" data-tecla="-" aria-label="Restar">−</button>
+
+      <button data-tecla="7">7</button>
+      <button data-tecla="8">8</button>
+      <button data-tecla="9">9</button>
+      <button class="operacion alto" data-tecla="+" aria-label="Sumar">+</button>
+
+      <button data-tecla="4">4</button>
+      <button data-tecla="5">5</button>
+      <button data-tecla="6">6</button>
+
+      <button data-tecla="1">1</button>
+      <button data-tecla="2">2</button>
+      <button data-tecla="3">3</button>
+      <button class="igual alto" data-tecla="=" aria-label="Igual">=</button>
+
+      <button class="ancho" data-tecla="0">0</button>
+      <button data-tecla="." aria-label="Punto decimal">.</button>
+    </div>
+  </main>
+
+  <!-- Lógica de la calculadora: no toca la página. calculadora.test.js la lee de este bloque. -->
+  <script id="logica">
+    // Calculadora de sobremesa de 8 dígitos que solo suma y resta.
+    // Recibe el estado y la tecla pulsada, y devuelve el estado nuevo.
+
+    const MAX_DIGITOS = 8;
+
+    function crearEstado() {
+      return {
+        pantalla: "0",      // lo que se ve en la pantalla
+        acumulado: null,    // resultado guardado a la espera del siguiente número
+        operador: null,     // "+" o "-" pendiente de aplicar
+        escribiendo: false, // true mientras se teclea un número
+        error: false,       // true cuando la pantalla muestra "E"
+      };
+    }
+
+    // Teclas: "0"–"9", ".", "+", "-", "=", "C" y "CE".
+    function pulsar(estado, tecla) {
+      if (tecla === "C") return crearEstado();
+      if (estado.error) return estado;
+      if (/^[0-9]$/.test(tecla)) return pulsarDigito(estado, tecla);
+      if (tecla === ".") return pulsarPunto(estado);
+      if (tecla === "+" || tecla === "-") return pulsarOperador(estado, tecla);
+      if (tecla === "=") return pulsarIgual(estado);
+      if (tecla === "CE") return { ...estado, pantalla: "0", escribiendo: true };
+      return estado;
+    }
+
+    function pulsarDigito(estado, digito) {
+      if (!estado.escribiendo || estado.pantalla === "0") {
+        return { ...estado, pantalla: digito, escribiendo: true };
+      }
+      if (contarDigitos(estado.pantalla) >= MAX_DIGITOS) return estado;
+      return { ...estado, pantalla: estado.pantalla + digito };
+    }
+
+    function pulsarPunto(estado) {
+      if (!estado.escribiendo) return { ...estado, pantalla: "0.", escribiendo: true };
+      if (estado.pantalla.includes(".")) return estado;
+      return { ...estado, pantalla: estado.pantalla + "." };
+    }
+
+    function pulsarOperador(estado, operador) {
+      // Dos operadores seguidos: vale el último.
+      if (estado.operador && !estado.escribiendo) return { ...estado, operador };
+      const resuelto = resolver(estado);
+      if (resuelto.error) return resuelto;
+      return { ...resuelto, acumulado: Number(resuelto.pantalla), operador, escribiendo: false };
+    }
+
+    function pulsarIgual(estado) {
+      const resuelto = resolver(estado);
+      if (resuelto.error) return resuelto;
+      return { ...resuelto, acumulado: null, operador: null, escribiendo: false };
+    }
+
+    // Aplica la operación pendiente, si la hay, y deja el resultado en la pantalla.
+    function resolver(estado) {
+      if (!estado.operador) return estado;
+      const numero = Number(estado.pantalla);
+      const resultado = estado.operador === "+" ? estado.acumulado + numero : estado.acumulado - numero;
+      const texto = formatear(resultado);
+      if (texto === null) return { ...crearEstado(), pantalla: "E", error: true };
+      return { ...estado, pantalla: texto };
+    }
+
+    // Convierte un resultado en el texto de la pantalla: como mucho 8 cifras, sin ceros
+    // sobrantes ni restos de coma flotante (0.1 + 0.2 muestra 0.3). Devuelve null si no cabe.
+    function formatear(numero) {
+      const cifrasEnteras = String(Math.trunc(Math.abs(numero))).length;
+      if (cifrasEnteras > MAX_DIGITOS) return null;
+      let texto = Math.abs(numero).toFixed(MAX_DIGITOS - cifrasEnteras);
+      if (texto.includes(".")) texto = texto.replace(/0+$/, "").replace(/\.$/, "");
+      if (contarDigitos(texto) > MAX_DIGITOS) return null; // al redondear puede ganar una cifra
+      return numero < 0 && texto !== "0" ? "-" + texto : texto;
+    }
+
+    function contarDigitos(texto) {
+      return texto.replace(/[^0-9]/g, "").length;
+    }
+
+    // Teclas del teclado del ordenador que equivalen a una tecla de la calculadora.
+    // La coma es el punto decimal del teclado numérico en español.
+    const TECLAS_DEL_ORDENADOR = {
+      ".": ".", ",": ".",
+      "+": "+", "-": "-",
+      "=": "=", "Enter": "=",
+      "Escape": "C",
+      "Backspace": "CE", "Delete": "CE",
+    };
+
+    // Recibe el nombre de una tecla del ordenador ("7", "Enter"...) y devuelve
+    // la tecla de la calculadora que le corresponde, o null si no se usa.
+    function traducirTecla(tecla) {
+      if (/^[0-9]$/.test(tecla)) return tecla;
+      return TECLAS_DEL_ORDENADOR[tecla] ?? null;
+    }
+  </script>
+
+  <!-- Conexión de los botones con la lógica -->
+  <script>
+    let estado = crearEstado();
+    const pantalla = document.getElementById("pantalla");
+
+    function pulsarTecla(tecla) {
+      estado = pulsar(estado, tecla);
+      pantalla.textContent = estado.pantalla;
+    }
+
+    document.querySelectorAll("[data-tecla]").forEach(function (boton) {
+      boton.addEventListener("click", function () {
+        pulsarTecla(boton.dataset.tecla);
+      });
+    });
+
+    // Teclado del ordenador: hace lo mismo que el botón y lo hunde un momento.
+    document.addEventListener("keydown", function (evento) {
+      if (evento.ctrlKey || evento.altKey || evento.metaKey) return; // no estorbar atajos como Ctrl + "+"
+      const tecla = traducirTecla(evento.key);
+      if (tecla === null) return;
+      evento.preventDefault(); // evita que Enter pulse además el último botón clicado
+      pulsarTecla(tecla);
+      const boton = document.querySelector('[data-tecla="' + tecla + '"]');
+      boton.classList.add("pulsada");
+      setTimeout(function () { boton.classList.remove("pulsada"); }, 120);
+    });
+  </script>
+</body>
+</html>
