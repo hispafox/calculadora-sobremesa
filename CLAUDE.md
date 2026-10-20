@@ -67,6 +67,11 @@ node --test
 
 - Los tests cubren como mínimo: suma, resta, encadenado, operadores seguidos, decimales (`0.1 + 0.2`), resultados negativos, desbordamiento (`E`), `C`, `CE` y la traducción de las teclas del ordenador.
 
+## Subir cambios
+
+- Repositorio: https://github.com/hispafox/calculadora-sobremesa (público, rama `main`).
+- Para subir cambios se usa siempre la skill `subir-cambios` (`.claude/skills/subir-cambios/SKILL.md`): el mensaje empieza por la inicial de quien sube, por ejemplo `[P] Añade la tecla C`.
+
 ## Convenciones
 
 - Identificadores, comentarios y textos de la interfaz en español.
