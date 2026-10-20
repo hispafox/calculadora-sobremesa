@@ -53,6 +53,7 @@ Dentro de `index.html` hay dos bloques `<script>` separados:
 - Pantalla LCD: fondo verde grisáceo, dígitos oscuros alineados a la derecha, fuente monoespaciada.
 - Teclas con relieve que se hunden al pulsarlas. `C` y `CE` en un color distinto; `=` destacada.
 - Detalles decorativos opcionales: placa solar falsa y una marca genérica. Nunca una marca real.
+- Número de versión (`v1.0`) en letra pequeña y poco contraste, abajo a la derecha de la carcasa. Solo se cambia cuando yo lo pida.
 - Todo el CSS va en `index.html`. Sin fuentes ni recursos externos.
 
 ## Tests

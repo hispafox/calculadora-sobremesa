@@ -18,6 +18,10 @@ function teclear(secuencia) {
   return teclas.reduce(pulsar, crearEstado()).pantalla;
 }
 
+test("la calculadora muestra su número de versión", () => {
+  assert.match(html, /<div class="version">v1\.0<\/div>/);
+});
+
 test("al encender muestra 0", () => {
   assert.strictEqual(crearEstado().pantalla, "0");
 });

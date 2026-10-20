@@ -118,6 +118,15 @@
 
     .ancho { grid-column: span 2; }
     .alto  { grid-row: span 2; }
+
+    /* Número de versión discreto, como grabado en el plástico */
+    .version {
+      margin-top: 14px;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-align: right;
+      color: #aaa392;
+    }
   </style>
 </head>
 <body>
@@ -153,6 +162,8 @@
       <button class="ancho" data-tecla="0">0</button>
       <button data-tecla="." aria-label="Punto decimal">.</button>
     </div>
+
+    <div class="version">v1.0</div>
   </main>
 
   <!-- Lógica de la calculadora: no toca la página. calculadora.test.js la lee de este bloque. -->
