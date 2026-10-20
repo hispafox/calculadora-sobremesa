@@ -14,7 +14,8 @@ Calculadora web que imita una calculadora de sobremesa clásica, tanto en el asp
 - Operaciones: suma (`+`) y resta (`−`). Nada más.
 - Teclas: `0`–`9`, `.`, `+`, `−`, `=`, `C` (borra todo) y `CE` (borra el número que se está tecleando).
 - Teclado del ordenador: `0`–`9`, `+`, `-`, `.` o `,` (punto decimal), `Enter` o `=` (resultado), `Escape` (C), `Retroceso` o `Supr` (CE). El botón de pantalla se hunde un momento al pulsar su tecla. Los atajos con Ctrl, Alt o Cmd no se tocan.
-- Fuera de alcance: multiplicar, dividir, porcentaje, memoria (M+, M−), raíz, cambio de signo, historial. No añadir nada de esto sin pedírmelo.
+- Historial: un botón con un reloj en la cabecera abre una lista con las últimas operaciones terminadas (como mucho 20, la más reciente primero), por ejemplo `5 + 3 − 2 = 6`. Solo se apuntan las cuentas cerradas con `=` que tenían una suma o una resta. `C` y `E` no lo borran; se pierde al cerrar la página.
+- Fuera de alcance: multiplicar, dividir, porcentaje, memoria (M+, M−), raíz, cambio de signo. No añadir nada de esto sin pedírmelo.
 
 ## Stack
 
@@ -65,7 +66,7 @@ Dentro de `index.html` hay dos bloques `<script>` separados:
 node --test
 ```
 
-- Los tests cubren como mínimo: suma, resta, encadenado, operadores seguidos, decimales (`0.1 + 0.2`), resultados negativos, desbordamiento (`E`), `C`, `CE` y la traducción de las teclas del ordenador.
+- Los tests cubren como mínimo: suma, resta, encadenado, operadores seguidos, decimales (`0.1 + 0.2`), resultados negativos, desbordamiento (`E`), `C`, `CE`, el historial y la traducción de las teclas del ordenador.
 
 ## Subir cambios
 

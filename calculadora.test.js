@@ -116,6 +116,61 @@ test("CE borra solo el número que se está tecleando", () => {
   assert.strictEqual(teclear("5+3CE4="), "9");
 });
 
+// Pulsa las teclas de la secuencia una a una y devuelve el historial.
+// Array.from lo copia a una lista normal: la que crea vm no se compara bien con deepStrictEqual.
+function historialTras(secuencia) {
+  const teclas = secuencia.match(/CE|C|[0-9]|\.|\+|-|=/g);
+  return Array.from(teclas.reduce(pulsar, crearEstado()).historial);
+}
+
+test("al encender el historial está vacío", () => {
+  assert.strictEqual(crearEstado().historial.length, 0);
+});
+
+test("el historial apunta cada operación terminada con =", () => {
+  assert.deepStrictEqual(historialTras("5+3="), ["5 + 3 = 8"]);
+  assert.deepStrictEqual(historialTras("5+3-2="), ["5 + 3 − 2 = 6"]);
+});
+
+test("el historial pone la operación más reciente primero", () => {
+  assert.deepStrictEqual(historialTras("5+3=9-4="), ["9 − 4 = 5", "5 + 3 = 8"]);
+});
+
+test("el historial sigue sobre el resultado anterior", () => {
+  assert.deepStrictEqual(historialTras("5+3=+2="), ["8 + 2 = 10", "5 + 3 = 8"]);
+});
+
+test("el historial: dos operadores seguidos apuntan el último", () => {
+  assert.deepStrictEqual(historialTras("5+-3="), ["5 − 3 = 2"]);
+});
+
+test("el historial: decimales y negativos", () => {
+  assert.deepStrictEqual(historialTras("0.1+0.2="), ["0.1 + 0.2 = 0.3"]);
+  assert.deepStrictEqual(historialTras("3-5="), ["3 − 5 = -2"]);
+  assert.deepStrictEqual(historialTras("3.+1="), ["3 + 1 = 4"]);
+});
+
+test("el historial no apunta = sin operación ni cuentas a medias", () => {
+  assert.deepStrictEqual(historialTras("5="), []);
+  assert.deepStrictEqual(historialTras("5+3"), []);
+  assert.deepStrictEqual(historialTras("5+3=="), ["5 + 3 = 8"]);
+});
+
+test("el historial apunta el número que queda tras CE", () => {
+  assert.deepStrictEqual(historialTras("5+3CE4="), ["5 + 4 = 9"]);
+});
+
+test("C y E no borran el historial", () => {
+  assert.deepStrictEqual(historialTras("5+3=C"), ["5 + 3 = 8"]);
+  assert.deepStrictEqual(historialTras("5+3=99999999+1="), ["5 + 3 = 8"]);
+  assert.deepStrictEqual(historialTras("5+3=C1+1="), ["1 + 1 = 2", "5 + 3 = 8"]);
+});
+
+test("el historial guarda como mucho 20 operaciones", () => {
+  const historial = historialTras("1+1=".repeat(25));
+  assert.strictEqual(historial.length, 20);
+});
+
 test("teclado del ordenador: números, suma y resta", () => {
   assert.strictEqual(traducirTecla("0"), "0");
   assert.strictEqual(traducirTecla("7"), "7");

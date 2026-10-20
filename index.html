@@ -114,10 +114,102 @@
 
     .teclado .operacion { --cara: #2f5d9e; --borde: #1b3a66; }
     .teclado .borrar    { --cara: #b8322a; --borde: #6e1a14; }
+    .teclado .borrar[data-tecla="C"] { --cara: #c2187a; --borde: #7a0f4c; }
     .teclado .igual     { --cara: #f59a23; --borde: #a85a0e; color: #1d1d1d; }
 
     .ancho { grid-column: span 2; }
     .alto  { grid-row: span 2; }
+
+    /* Botón del historial, en la cabecera junto a la placa solar */
+    .cabecera-derecha {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .boton-historial {
+      width: 30px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 6px;
+      background: #2a2b2f;
+      box-shadow: 0 3px 0 #111214;
+      color: #f4f4f2;
+      cursor: pointer;
+    }
+
+    .boton-historial:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #111214;
+    }
+
+    /* Historial: tira de papel que tapa las teclas */
+    .teclado { position: relative; }
+
+    .historial {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #fbf9f2;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      color: #1d1d1d;
+    }
+
+    .historial[hidden] { display: none; }
+
+    .historial-titulo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #b5ad9c;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .teclado .cerrar-historial {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #2a2b2f;
+      box-shadow: none;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .historial-lista {
+      flex: 1;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      list-style: none;
+      font-family: "Lucida Console", Consolas, "Courier New", monospace;
+      font-size: 15px;
+    }
+
+    .historial-lista:empty { display: none; }
+
+    .historial-lista li {
+      padding: 8px 0;
+      border-bottom: 1px dashed #d8d1c1;
+      text-align: right;
+    }
+
+    .historial-vacio {
+      margin: 16px 0 0;
+      color: #5a5549;
+      font-size: 14px;
+      text-align: center;
+    }
 
     /* Número de versión discreto, como grabado en el plástico */
     .version {
@@ -133,7 +225,15 @@
   <main class="calculadora">
     <div class="cabecera">
       <div class="marca">CALC-8<small>8 DÍGITOS</small></div>
-      <div class="placa-solar" aria-hidden="true"></div>
+      <div class="cabecera-derecha">
+        <button class="boton-historial" id="boton-historial" aria-label="Ver historial" aria-expanded="false" title="Historial">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/>
+            <path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="placa-solar" aria-hidden="true"></div>
+      </div>
     </div>
 
     <div class="marco-pantalla">
@@ -161,6 +261,16 @@
 
       <button class="ancho" data-tecla="0">0</button>
       <button data-tecla="." aria-label="Punto decimal">.</button>
+
+      <!-- Historial: tapa las teclas mientras está abierto -->
+      <section class="historial" id="historial" aria-label="Historial" hidden>
+        <div class="historial-titulo">
+          Historial
+          <button class="cerrar-historial" id="cerrar-historial" aria-label="Cerrar historial">×</button>
+        </div>
+        <ol class="historial-lista" id="historial-lista"></ol>
+        <p class="historial-vacio" id="historial-vacio">Todavía no hay operaciones.</p>
+      </section>
     </div>
 
     <div class="version">v1.0</div>
@@ -172,6 +282,8 @@
     // Recibe el estado y la tecla pulsada, y devuelve el estado nuevo.
 
     const MAX_DIGITOS = 8;
+    const MAX_HISTORIAL = 20;
+    const SIMBOLOS = { "+": "+", "-": "−" };
 
     function crearEstado() {
       return {
@@ -180,12 +292,14 @@
         operador: null,     // "+" o "-" pendiente de aplicar
         escribiendo: false, // true mientras se teclea un número
         error: false,       // true cuando la pantalla muestra "E"
+        cuenta: "",         // operación en curso tal como se lee: "5 + 3 − "
+        historial: [],      // operaciones terminadas, la más reciente primero
       };
     }
 
     // Teclas: "0"–"9", ".", "+", "-", "=", "C" y "CE".
     function pulsar(estado, tecla) {
-      if (tecla === "C") return crearEstado();
+      if (tecla === "C") return { ...crearEstado(), historial: estado.historial };
       if (estado.error) return estado;
       if (/^[0-9]$/.test(tecla)) return pulsarDigito(estado, tecla);
       if (tecla === ".") return pulsarPunto(estado);
@@ -211,16 +325,28 @@
 
     function pulsarOperador(estado, operador) {
       // Dos operadores seguidos: vale el último.
-      if (estado.operador && !estado.escribiendo) return { ...estado, operador };
+      if (estado.operador && !estado.escribiendo) {
+        return { ...estado, operador, cuenta: estado.cuenta.slice(0, -2) + SIMBOLOS[operador] + " " };
+      }
       const resuelto = resolver(estado);
       if (resuelto.error) return resuelto;
-      return { ...resuelto, acumulado: Number(resuelto.pantalla), operador, escribiendo: false };
+      const cuenta = estado.cuenta + numeroTecleado(estado) + " " + SIMBOLOS[operador] + " ";
+      return { ...resuelto, acumulado: Number(resuelto.pantalla), operador, escribiendo: false, cuenta };
     }
 
     function pulsarIgual(estado) {
       const resuelto = resolver(estado);
       if (resuelto.error) return resuelto;
-      return { ...resuelto, acumulado: null, operador: null, escribiendo: false };
+      // Solo se apunta en el historial si había una suma o una resta que hacer.
+      const historial = estado.operador
+        ? [estado.cuenta + numeroTecleado(estado) + " = " + resuelto.pantalla, ...estado.historial].slice(0, MAX_HISTORIAL)
+        : estado.historial;
+      return { ...resuelto, acumulado: null, operador: null, escribiendo: false, cuenta: "", historial };
+    }
+
+    // El número de la pantalla tal como se apunta en la cuenta: "3." se apunta "3".
+    function numeroTecleado(estado) {
+      return estado.pantalla.replace(/\.$/, "");
     }
 
     // Aplica la operación pendiente, si la hay, y deja el resultado en la pantalla.
@@ -229,7 +355,7 @@
       const numero = Number(estado.pantalla);
       const resultado = estado.operador === "+" ? estado.acumulado + numero : estado.acumulado - numero;
       const texto = formatear(resultado);
-      if (texto === null) return { ...crearEstado(), pantalla: "E", error: true };
+      if (texto === null) return { ...crearEstado(), historial: estado.historial, pantalla: "E", error: true };
       return { ...estado, pantalla: texto };
     }
 
@@ -271,10 +397,37 @@
     let estado = crearEstado();
     const pantalla = document.getElementById("pantalla");
 
+    const botonHistorial = document.getElementById("boton-historial");
+    const historial = document.getElementById("historial");
+    const listaHistorial = document.getElementById("historial-lista");
+    const historialVacio = document.getElementById("historial-vacio");
+
     function pulsarTecla(tecla) {
       estado = pulsar(estado, tecla);
       pantalla.textContent = estado.pantalla;
+      pintarHistorial();
     }
+
+    function pintarHistorial() {
+      listaHistorial.replaceChildren(...estado.historial.map(function (operacion) {
+        const linea = document.createElement("li");
+        linea.textContent = operacion;
+        return linea;
+      }));
+      historialVacio.hidden = estado.historial.length > 0;
+    }
+
+    function mostrarHistorial(abrir) {
+      historial.hidden = !abrir;
+      botonHistorial.setAttribute("aria-expanded", String(abrir));
+    }
+
+    botonHistorial.addEventListener("click", function () {
+      mostrarHistorial(historial.hidden);
+    });
+    document.getElementById("cerrar-historial").addEventListener("click", function () {
+      mostrarHistorial(false);
+    });
 
     document.querySelectorAll("[data-tecla]").forEach(function (boton) {
       boton.addEventListener("click", function () {
