@@ -82,6 +82,6 @@ node --test
 - Funciones pequeñas y legibles. Sin clases ni abstracciones que no hagan falta.
 - El bloque de lógica no toca el DOM; el bloque de los botones no hace cálculos.
 
-## Pendiente
+## Problemas conocidos
 
-- En el navegador integrado de VS Code, `Esc`, `Retroceso` y `Supr` no llegan a la calculadora. En el visor de la app de Claude sí funcionan. Falta probarlo en Chrome o Edge. Causa probable: VS Code se queda en algunas situaciones con las teclas especiales (Esc, Retroceso, Supr, Enter, flechas) y solo deja pasar letras, números y símbolos.
+- En el navegador integrado de VS Code, `Esc`, `Retroceso` y `Supr` no llegan a la calculadora. Es cosa de VS Code, que se queda con esas teclas: en Edge y en el visor de la app de Claude funcionan las tres, y también `Enter` (comprobado el 23-10-2026). Dentro de VS Code, para borrar todo se usa la letra `C`; para `CE` solo queda el botón.
