@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Calculadora</title>
+  <title data-texto="titulo">Calculadora</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -120,11 +120,41 @@
     .ancho { grid-column: span 2; }
     .alto  { grid-row: span 2; }
 
-    /* Botón del historial, en la cabecera junto a la placa solar */
+    /* Botón del historial, en la cabecera junto a la placa solar; debajo, el selector de idioma */
     .cabecera-derecha {
+      display: grid;
+      grid-template-columns: auto auto;
+      align-items: center;
+      gap: 6px 10px;
+    }
+
+    /* Selector de idioma: letras impresas en el plástico; la elegida, en relieve oscuro */
+    .idiomas {
+      grid-column: 1 / -1;
+      justify-self: end;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 2px;
+      font-size: 9px;
+      color: #8a8476;
+    }
+
+    .idiomas button {
+      padding: 2px 4px;
+      border: none;
+      border-radius: 3px;
+      background: none;
+      color: #6d685e;
+      font-family: inherit;
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+
+    .idiomas button[aria-pressed="true"] {
+      background: #4b4740;
+      color: #f4f2ea;
     }
 
     .boton-historial {
@@ -224,15 +254,24 @@
 <body>
   <main class="calculadora">
     <div class="cabecera">
-      <div class="marca">CALC-8<small>8 DÍGITOS</small></div>
+      <div class="marca">CALC-8<small data-texto="digitos">8 DÍGITOS</small></div>
       <div class="cabecera-derecha">
-        <button class="boton-historial" id="boton-historial" aria-label="Ver historial" aria-expanded="false" title="Historial">
+        <button class="boton-historial" id="boton-historial" aria-label="Ver historial" aria-expanded="false" title="Historial" data-etiqueta="verHistorial" data-titulo="historial">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
             <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/>
             <path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
           </svg>
         </button>
         <div class="placa-solar" aria-hidden="true"></div>
+        <div class="idiomas" role="group" aria-label="Idioma" data-etiqueta="idioma">
+          <button data-idioma="es" lang="es" aria-label="Español" title="Español" aria-pressed="true">ES</button>
+          <span aria-hidden="true">·</span>
+          <button data-idioma="en" lang="en" aria-label="English" title="English" aria-pressed="false">EN</button>
+          <span aria-hidden="true">·</span>
+          <button data-idioma="fr" lang="fr" aria-label="Français" title="Français" aria-pressed="false">FR</button>
+          <span aria-hidden="true">·</span>
+          <button data-idioma="pt" lang="pt" aria-label="Português" title="Português" aria-pressed="false">PT</button>
+        </div>
       </div>
     </div>
 
@@ -241,14 +280,14 @@
     </div>
 
     <div class="teclado">
-      <button class="borrar ancho" data-tecla="C" aria-label="Borrar todo">C</button>
-      <button class="borrar" data-tecla="CE" aria-label="Borrar número">CE</button>
-      <button class="operacion" data-tecla="-" aria-label="Restar">−</button>
+      <button class="borrar ancho" data-tecla="C" aria-label="Borrar todo" data-etiqueta="borrarTodo">C</button>
+      <button class="borrar" data-tecla="CE" aria-label="Borrar número" data-etiqueta="borrarNumero">CE</button>
+      <button class="operacion" data-tecla="-" aria-label="Restar" data-etiqueta="restar">−</button>
 
       <button data-tecla="7">7</button>
       <button data-tecla="8">8</button>
       <button data-tecla="9">9</button>
-      <button class="operacion alto" data-tecla="+" aria-label="Sumar">+</button>
+      <button class="operacion alto" data-tecla="+" aria-label="Sumar" data-etiqueta="sumar">+</button>
 
       <button data-tecla="4">4</button>
       <button data-tecla="5">5</button>
@@ -257,19 +296,19 @@
       <button data-tecla="1">1</button>
       <button data-tecla="2">2</button>
       <button data-tecla="3">3</button>
-      <button class="igual alto" data-tecla="=" aria-label="Igual">=</button>
+      <button class="igual alto" data-tecla="=" aria-label="Igual" data-etiqueta="igual">=</button>
 
       <button class="ancho" data-tecla="0">0</button>
-      <button data-tecla="." aria-label="Punto decimal">.</button>
+      <button data-tecla="." aria-label="Punto decimal" data-etiqueta="puntoDecimal">.</button>
 
       <!-- Historial: tapa las teclas mientras está abierto -->
-      <section class="historial" id="historial" aria-label="Historial" hidden>
+      <section class="historial" id="historial" aria-label="Historial" data-etiqueta="historial" hidden>
         <div class="historial-titulo">
-          Historial
-          <button class="cerrar-historial" id="cerrar-historial" aria-label="Cerrar historial">×</button>
+          <span data-texto="historial">Historial</span>
+          <button class="cerrar-historial" id="cerrar-historial" aria-label="Cerrar historial" data-etiqueta="cerrarHistorial">×</button>
         </div>
         <ol class="historial-lista" id="historial-lista"></ol>
-        <p class="historial-vacio" id="historial-vacio">Todavía no hay operaciones.</p>
+        <p class="historial-vacio" id="historial-vacio" data-texto="historialVacio">Todavía no hay operaciones.</p>
       </section>
     </div>
 
@@ -390,12 +429,89 @@
       if (/^[0-9]$/.test(tecla)) return tecla;
       return TECLAS_DEL_ORDENADOR[tecla] ?? null;
     }
+
+    // Textos de la interfaz en cada idioma. Las teclas, la pantalla y el historial
+    // se ven igual en todos.
+    const IDIOMA_POR_DEFECTO = "es";
+    const TEXTOS = {
+      es: {
+        titulo: "Calculadora",
+        digitos: "8 DÍGITOS",
+        idioma: "Idioma",
+        verHistorial: "Ver historial",
+        historial: "Historial",
+        cerrarHistorial: "Cerrar historial",
+        historialVacio: "Todavía no hay operaciones.",
+        borrarTodo: "Borrar todo",
+        borrarNumero: "Borrar número",
+        restar: "Restar",
+        sumar: "Sumar",
+        igual: "Igual",
+        puntoDecimal: "Punto decimal",
+      },
+      en: {
+        titulo: "Calculator",
+        digitos: "8 DIGITS",
+        idioma: "Language",
+        verHistorial: "Show history",
+        historial: "History",
+        cerrarHistorial: "Close history",
+        historialVacio: "No calculations yet.",
+        borrarTodo: "Clear all",
+        borrarNumero: "Clear entry",
+        restar: "Subtract",
+        sumar: "Add",
+        igual: "Equals",
+        puntoDecimal: "Decimal point",
+      },
+      fr: {
+        titulo: "Calculatrice",
+        digitos: "8 CHIFFRES",
+        idioma: "Langue",
+        verHistorial: "Voir l’historique",
+        historial: "Historique",
+        cerrarHistorial: "Fermer l’historique",
+        historialVacio: "Aucune opération pour l’instant.",
+        borrarTodo: "Tout effacer",
+        borrarNumero: "Effacer le nombre",
+        restar: "Soustraire",
+        sumar: "Additionner",
+        igual: "Égal",
+        puntoDecimal: "Point décimal",
+      },
+      pt: {
+        titulo: "Calculadora",
+        digitos: "8 DÍGITOS",
+        idioma: "Idioma",
+        verHistorial: "Ver histórico",
+        historial: "Histórico",
+        cerrarHistorial: "Fechar histórico",
+        historialVacio: "Ainda não há operações.",
+        borrarTodo: "Apagar tudo",
+        borrarNumero: "Apagar número",
+        restar: "Subtrair",
+        sumar: "Somar",
+        igual: "Igual",
+        puntoDecimal: "Ponto decimal",
+      },
+    };
+
+    // Decide en qué idioma sale la calculadora. Manda el guardado, si es uno de los
+    // nuestros; si no, el del navegador ("fr-FR" → "fr"); y si tampoco, español.
+    function elegirIdioma(guardado, idiomaDelNavegador) {
+      if (Object.hasOwn(TEXTOS, guardado)) return guardado;
+      const delNavegador = String(idiomaDelNavegador ?? "").split("-")[0].toLowerCase();
+      return Object.hasOwn(TEXTOS, delNavegador) ? delNavegador : IDIOMA_POR_DEFECTO;
+    }
   </script>
 
   <!-- Conexión de los botones con la lógica -->
   <script>
     let estado = crearEstado();
     const pantalla = document.getElementById("pantalla");
+
+    const CLAVE_IDIOMA = "calculadora-idioma";
+    let idioma = elegirIdioma(leerIdiomaGuardado(), navigator.language);
 
     const botonHistorial = document.getElementById("boton-historial");
     const historial = document.getElementById("historial");
@@ -434,6 +550,43 @@
         pulsarTecla(boton.dataset.tecla);
       });
     });
+
+    // Pone los textos en el idioma elegido. No toca la cuenta ni el historial.
+    function pintarIdioma() {
+      const textos = TEXTOS[idioma];
+      document.documentElement.lang = idioma;
+      document.querySelectorAll("[data-texto]").forEach(function (elemento) {
+        elemento.textContent = textos[elemento.dataset.texto];
+      });
+      document.querySelectorAll("[data-etiqueta]").forEach(function (elemento) {
+        elemento.setAttribute("aria-label", textos[elemento.dataset.etiqueta]);
+      });
+      document.querySelectorAll("[data-titulo]").forEach(function (elemento) {
+        elemento.title = textos[elemento.dataset.titulo];
+      });
+      document.querySelectorAll("[data-idioma]").forEach(function (boton) {
+        boton.setAttribute("aria-pressed", String(boton.dataset.idioma === idioma));
+      });
+    }
+
+    // Si el navegador no deja guardar (por ejemplo, en la vista previa de la app de Claude),
+    // la calculadora funciona igual y simplemente no recuerda el idioma.
+    function leerIdiomaGuardado() {
+      try { return localStorage.getItem(CLAVE_IDIOMA); } catch { return null; }
+    }
+
+    function guardarIdioma() {
+      try { localStorage.setItem(CLAVE_IDIOMA, idioma); } catch { /* no se recuerda */ }
+    }
+
+    document.querySelectorAll("[data-idioma]").forEach(function (boton) {
+      boton.addEventListener("click", function () {
+        idioma = boton.dataset.idioma;
+        guardarIdioma();
+        pintarIdioma();
+      });
+    });
+    pintarIdioma();
 
     // Teclado del ordenador: hace lo mismo que el botón y lo hunde un momento.
     document.addEventListener("keydown", function (evento) {

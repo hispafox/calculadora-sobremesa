@@ -9,7 +9,9 @@ const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 const logica = html.match(/<script id="logica">([\s\S]*?)<\/script>/)[1];
 const contexto = {};
 vm.runInNewContext(logica, contexto);
-const { crearEstado, pulsar, traducirTecla } = contexto;
+const { crearEstado, pulsar, traducirTecla, elegirIdioma } = contexto;
+// Las constantes (const) no quedan colgadas del contexto como las funciones: hay que pedirlas.
+const TEXTOS = vm.runInContext("TEXTOS", contexto);
 
 // Pulsa las teclas de la secuencia una a una y devuelve lo que muestra la pantalla.
 // Ejemplo: teclear("5+3=") pulsa 5, +, 3 y =.
@@ -204,4 +206,47 @@ test("teclado del ordenador: una cuenta completa", () => {
   const teclas = ["1", "2", ",", "5", "+", "3", "Enter"];
   const estado = teclas.map(traducirTecla).reduce(pulsar, crearEstado());
   assert.strictEqual(estado.pantalla, "15.5");
+});
+
+test("idiomas: español, inglés, francés y portugués", () => {
+  assert.deepStrictEqual(Object.keys(TEXTOS).sort(), ["en", "es", "fr", "pt"]);
+});
+
+test("idiomas: todos tienen las mismas frases que el español y ninguna vacía", () => {
+  const frases = Object.keys(TEXTOS.es).sort();
+  for (const idioma of Object.keys(TEXTOS)) {
+    assert.deepStrictEqual(Object.keys(TEXTOS[idioma]).sort(), frases, `al idioma "${idioma}" le faltan o le sobran frases`);
+    for (const frase of frases) {
+      assert.notStrictEqual(TEXTOS[idioma][frase].trim(), "", `la frase "${frase}" está vacía en "${idioma}"`);
+    }
+  }
+});
+
+test("idiomas: cada texto que se traduce en la página tiene su frase", () => {
+  const usadas = [...html.matchAll(/data-(?:texto|etiqueta|titulo)="([^"]+)"/g)].map((encontrado) => encontrado[1]);
+  assert.ok(usadas.length > 0);
+  for (const frase of usadas) {
+    assert.ok(Object.hasOwn(TEXTOS.es, frase), `la página usa "${frase}", que no está en los textos`);
+  }
+});
+
+test("idioma inicial: el del navegador, si es uno de los cuatro", () => {
+  assert.strictEqual(elegirIdioma(null, "es-ES"), "es");
+  assert.strictEqual(elegirIdioma(null, "en-US"), "en");
+  assert.strictEqual(elegirIdioma(null, "fr-FR"), "fr");
+  assert.strictEqual(elegirIdioma(null, "pt-BR"), "pt");
+  assert.strictEqual(elegirIdioma(null, "pt"), "pt");
+});
+
+test("idioma inicial: con cualquier otro idioma, o sin idioma, español", () => {
+  assert.strictEqual(elegirIdioma(null, "de-DE"), "es");
+  assert.strictEqual(elegirIdioma(null, ""), "es");
+  assert.strictEqual(elegirIdioma(null, undefined), "es");
+});
+
+test("idioma inicial: manda el guardado; uno guardado que no existe se ignora", () => {
+  assert.strictEqual(elegirIdioma("fr", "en-US"), "fr");
+  assert.strictEqual(elegirIdioma("es", "pt-BR"), "es");
+  assert.strictEqual(elegirIdioma("de", "pt-BR"), "pt");
+  assert.strictEqual(elegirIdioma("toString", "en-US"), "en");
 });

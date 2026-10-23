@@ -15,6 +15,7 @@ Calculadora web que imita una calculadora de sobremesa clásica, tanto en el asp
 - Teclas: `0`–`9`, `.`, `+`, `−`, `=`, `C` (borra todo) y `CE` (borra el número que se está tecleando).
 - Teclado del ordenador: `0`–`9`, `+`, `-`, `.` o `,` (punto decimal), `Enter` o `=` (resultado), `Escape` (C), `Retroceso` o `Supr` (CE). El botón de pantalla se hunde un momento al pulsar su tecla. Los atajos con Ctrl, Alt o Cmd no se tocan.
 - Historial: un botón con un reloj en la cabecera abre una lista con las últimas operaciones terminadas (como mucho 20, la más reciente primero), por ejemplo `5 + 3 − 2 = 6`. Solo se apuntan las cuentas cerradas con `=` que tenían una suma o una resta. `C` y `E` no lo borran; se pierde al cerrar la página.
+- Idiomas: español, inglés, francés y portugués. Al abrirla sale en el idioma del navegador; si no es uno de los cuatro, en español. Un selector `ES · EN · FR · PT` en la cabecera, debajo del reloj y la placa solar, lo cambia al momento sin borrar la cuenta ni el historial. La elección se recuerda donde el navegador deja guardarla (no en la vista previa de la app de Claude). Solo se traducen los textos (título de la pestaña, `8 DÍGITOS`, el historial y lo que lee un lector de pantalla); las teclas, la pantalla, la `E`, las operaciones del historial, la marca y la versión se ven igual en todos.
 - Fuera de alcance: multiplicar, dividir, porcentaje, memoria (M+, M−), raíz, cambio de signo. No añadir nada de esto sin pedírmelo.
 
 ## Stack
@@ -32,8 +33,10 @@ calculadora.test.js   Tests de la lógica
 
 Dentro de `index.html` hay dos bloques `<script>` separados:
 
-- `<script id="logica">`: estado y operaciones. Sin acceso al DOM. Expone `crearEstado()`, `pulsar(estado, tecla)` y `traducirTecla(teclaDelOrdenador)`.
-- El bloque siguiente conecta los botones y el teclado del ordenador con la lógica y pinta la pantalla. No hace cálculos.
+- `<script id="logica">`: estado y operaciones. Sin acceso al DOM. Expone `crearEstado()`, `pulsar(estado, tecla)`, `traducirTecla(teclaDelOrdenador)`, los textos de cada idioma (`TEXTOS`) y `elegirIdioma(guardado, idiomaDelNavegador)`.
+- El bloque siguiente conecta los botones, el teclado del ordenador y el selector de idioma con la lógica, pinta la pantalla y los textos, y guarda el idioma elegido en `localStorage`. No hace cálculos.
+
+Los elementos que cambian de idioma llevan en el HTML el nombre de su frase en `TEXTOS`: `data-texto` (el texto que se ve), `data-etiqueta` (lo que lee el lector de pantalla) y `data-titulo` (lo que sale al pasar el ratón).
 
 `calculadora.test.js` lee `index.html`, extrae el bloque `<script id="logica">` y lo ejecuta con `node:vm`. Si se cambia el `id` o se divide el bloque, hay que ajustar el test.
 
@@ -66,7 +69,7 @@ Dentro de `index.html` hay dos bloques `<script>` separados:
 node --test
 ```
 
-- Los tests cubren como mínimo: suma, resta, encadenado, operadores seguidos, decimales (`0.1 + 0.2`), resultados negativos, desbordamiento (`E`), `C`, `CE`, el historial y la traducción de las teclas del ordenador.
+- Los tests cubren como mínimo: suma, resta, encadenado, operadores seguidos, decimales (`0.1 + 0.2`), resultados negativos, desbordamiento (`E`), `C`, `CE`, el historial, la traducción de las teclas del ordenador, que los cuatro idiomas tengan las mismas frases y la elección del idioma inicial.
 
 ## Subir cambios
 
@@ -75,7 +78,7 @@ node --test
 
 ## Convenciones
 
-- Identificadores, comentarios y textos de la interfaz en español.
+- Identificadores y comentarios en español. Los textos de la interfaz, en los cuatro idiomas: una frase nueva se añade a los cuatro a la vez.
 - Funciones pequeñas y legibles. Sin clases ni abstracciones que no hagan falta.
 - El bloque de lógica no toca el DOM; el bloque de los botones no hace cálculos.
 
