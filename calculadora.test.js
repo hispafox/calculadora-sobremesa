@@ -196,8 +196,14 @@ test("teclado del ordenador: Escape es C; Retroceso y Supr son CE", () => {
   assert.strictEqual(traducirTecla("Delete"), "CE");
 });
 
+test("teclado del ordenador: la letra C, mayúscula o minúscula, también es C", () => {
+  assert.strictEqual(traducirTecla("c"), "C");
+  assert.strictEqual(traducirTecla("C"), "C");
+  assert.strictEqual(["5", "+", "3", "c"].map(traducirTecla).reduce(pulsar, crearEstado()).pantalla, "0");
+});
+
 test("teclado del ordenador: las demás teclas no hacen nada", () => {
-  for (const tecla of ["*", "/", "a", "C", "Shift", "Tab", " ", "F1"]) {
+  for (const tecla of ["*", "/", "a", "e", "E", "Shift", "Tab", " ", "F1"]) {
     assert.strictEqual(traducirTecla(tecla), null, `la tecla "${tecla}" debería ignorarse`);
   }
 });

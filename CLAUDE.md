@@ -13,7 +13,7 @@ Calculadora web que imita una calculadora de sobremesa clásica, tanto en el asp
 
 - Operaciones: suma (`+`) y resta (`−`). Nada más.
 - Teclas: `0`–`9`, `.`, `+`, `−`, `=`, `C` (borra todo) y `CE` (borra el número que se está tecleando).
-- Teclado del ordenador: `0`–`9`, `+`, `-`, `.` o `,` (punto decimal), `Enter` o `=` (resultado), `Escape` (C), `Retroceso` o `Supr` (CE). El botón de pantalla se hunde un momento al pulsar su tecla. Los atajos con Ctrl, Alt o Cmd no se tocan.
+- Teclado del ordenador: `0`–`9`, `+`, `-`, `.` o `,` (punto decimal), `Enter` o `=` (resultado), `Escape` o la letra `C`, mayúscula o minúscula (C), `Retroceso` o `Supr` (CE). El botón de pantalla se hunde un momento al pulsar su tecla. Los atajos con Ctrl, Alt o Cmd no se tocan.
 - Historial: un botón con un reloj en la cabecera abre una lista con las últimas operaciones terminadas (como mucho 20, la más reciente primero), por ejemplo `5 + 3 − 2 = 6`. Solo se apuntan las cuentas cerradas con `=` que tenían una suma o una resta. `C` y `E` no lo borran; se pierde al cerrar la página.
 - Idiomas: español, inglés, francés y portugués. Al abrirla sale en el idioma del navegador; si no es uno de los cuatro, en español. Un selector `ES · EN · FR · PT` en la cabecera, debajo del reloj y la placa solar, lo cambia al momento sin borrar la cuenta ni el historial. La elección se recuerda donde el navegador deja guardarla (no en la vista previa de la app de Claude). Solo se traducen los textos (título de la pestaña, `8 DÍGITOS`, el historial y lo que lee un lector de pantalla); las teclas, la pantalla, la `E`, las operaciones del historial, la marca y la versión se ven igual en todos.
 - Fuera de alcance: multiplicar, dividir, porcentaje, memoria (M+, M−), raíz, cambio de signo. No añadir nada de esto sin pedírmelo.
@@ -85,4 +85,3 @@ node --test
 ## Pendiente
 
 - En el navegador integrado de VS Code, `Esc`, `Retroceso` y `Supr` no llegan a la calculadora. En el visor de la app de Claude sí funcionan. Falta probarlo en Chrome o Edge. Causa probable: VS Code se queda en algunas situaciones con las teclas especiales (Esc, Retroceso, Supr, Enter, flechas) y solo deja pasar letras, números y símbolos.
-- Propuesta a la espera de respuesta: que la tecla `C` del teclado haga lo mismo que el botón C (borrar todo), porque VS Code siempre deja pasar las letras.

@@ -415,11 +415,12 @@
 
     // Teclas del teclado del ordenador que equivalen a una tecla de la calculadora.
     // La coma es el punto decimal del teclado numérico en español.
+    // La letra C también borra todo: hay navegadores (el de VS Code) que se quedan con Escape.
     const TECLAS_DEL_ORDENADOR = {
       ".": ".", ",": ".",
       "+": "+", "-": "-",
       "=": "=", "Enter": "=",
-      "Escape": "C",
+      "Escape": "C", "c": "C", "C": "C",
       "Backspace": "CE", "Delete": "CE",
     };
 
